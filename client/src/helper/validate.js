@@ -31,6 +31,12 @@ export const registerValidation = async(values) => {
     return errors
 }
 
+export const profileValidation = async(values) => {
+    const errors = emailVerify({}, values);
+    return errors
+
+}
+
 // validate password 
 
 const passwordVerify = (errors={}, values) => {
@@ -62,7 +68,7 @@ const emailVerify =(errors={}, values) => {
         errors.email = toast.error('email is Required')
     }else if (values.email.includes(" ")) {
         errors.email = toast.error('Invalid email... !')
-    }else if(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/i.test(values.email)){
+    }else if(/"^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$"/i.test(values.email)){
         errors.email= toast.error('Invalid email address... !')
     }
     return errors

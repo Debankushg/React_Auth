@@ -4,7 +4,7 @@ import profile from '../assets/profile.png'
 import styles from '../styles/Username.module.css'
 import { Toaster } from 'react-hot-toast'
 import { useFormik } from 'formik'
-import {registerValidation } from '../helper/validate'
+import {registerValidation} from '../helper/validate'
 import convertToBase64 from '../helper/convert'
 
 const Register = () => {
