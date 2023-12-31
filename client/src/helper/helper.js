@@ -1,7 +1,16 @@
 
 import axios from 'axios'
+import {jwtDecode} from 'jwt-decode'
 
 axios.defaults.baseURL = process.env.REACT_APP_SERVER_DOMAIN
+
+
+export const getUserName = async() => {
+    const token = localStorage.getItem('token')
+    if(!token) return Promise.reject('Cannot Find Token')
+    let decode = jwtDecode(token)
+return decode
+}
 
 
 

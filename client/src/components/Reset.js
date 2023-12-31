@@ -1,11 +1,24 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React, { useEffect } from 'react'
+import { Navigate, useNavigate } from 'react-router-dom'
 import styles from '../styles/Username.module.css'
-import { Toaster } from 'react-hot-toast'
+import toast,{ Toaster } from 'react-hot-toast'
 import { useFormik } from 'formik'
 import { resetPasswordValidation } from '../helper/validate'
+import { resetPassword } from '../helper/helper'
+import { useAuthStore } from '../store/store'
+import useFetch from '../hooks/fetch.hook'
+
 
 const Reset = () => {
+
+  const navigate = useNavigate()
+  const[{isLoading,apiData,serverError,status}] =useFetch('createResetSession')
+
+ const {username}= useAuthStore(state => state.auth)
+
+ useEffect(() =>{
+  console.log(apiData);
+ },[])
 
   const formik = useFormik({
     initialValues: {
@@ -17,10 +30,28 @@ const Reset = () => {
     validateOnChange: false,
     onSubmit: async values => {
       console.log(values)
+      let resetPromise = resetPassword({username , password:values.password})
+
+      toast.promise(resetPromise,{
+        loading:'Updating...',
+        success:<b>Reset Successfully..</b>,
+        error:<b>Could not Reset</b>
+      })
+      resetPromise.then(function(){navigate('/password')})
+
     }
 
   })
 
+  if(isLoading) return <h1 className='text-2xl font-bold'>Is Loading</h1>
+  if(serverError) return <h1 className='text-xl text-red-500'>{serverError.message}</h1>
+
+  if(status && status!== 201) return <Navigate to={'/password'} replace={true}></Navigate>
+
+
+  const handleReset = () => {
+
+  }
 
   return (
     <div className="container mx-auto">
@@ -43,11 +74,11 @@ const Reset = () => {
             <div className="textbox flex flex-col items-center gap-6">
               <input {...formik.getFieldProps('password')} className={styles.textbox} type="text" placeholder='password' />
               <input {...formik.getFieldProps('confirm_pwd')} className={styles.textbox} type="text" placeholder='confirm password' />
-              <button className={styles.btn} type='submit'>Reset</button>
+              <button className={styles.btn} type='submit' onClick={handleReset}>Reset</button>
             </div>
 
             <div className="text-center py-4">
-              <span className='text-gray-500'>Forgot password? <Link className='text-red-500' to="/recovery">Recover Now</Link></span>
+              <span className='text-gray-500'>Forgot password? <button className='text-red-500' to="/recovery">Recover Now</button></span>
             </div>
 
           </form>

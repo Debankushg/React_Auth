@@ -186,42 +186,38 @@ export const verifyOTP = async (req, res) => {
 export const createResetSession = async (req, res) => {
     if (req.app.locals.resetSession) {
         req.app.locals.resetSession = false;
-        return res.status(201).send({ msg: "access granted..!!" })
+        return res.status(201).send({ flag: req.app.locals.resetSession })
     }
     return res.status(404).send({ error: "Session Expired" })
 }
 
 //http://localhost:8080/api/resetPassword
-export const resetPassword = async (req, res) => {
-    try {
 
+export async function resetPassword(req, res) {
+    try {
         if (!req.app.locals.resetSession) {
-            return res.status(404).send({ error: "Session Expired" })
+            return res.status(404).send({ error: "Session expired!" });
         }
-        const { username, password } = req.body
+
+        const { username, password } = req.body;
 
         try {
+            const user = await UserModel.findOne({ username });
 
-            UserModel.findOne({ username }).then(user => {
-                bcrypt.hash(password, 10).then(hashedpassword => {
-                    const updateRecord = UserModel.updateOne({ username: user.username }, { password: hashedpassword })
+            if (!user) {
+                return res.status(404).send({ error: "Username not found" });
+            }
 
-                    if (updateRecord) {
-                        req.app.locals.resetSession = false;
-                        return res.status(201).send({ msg: "Record Updated" })
-                    }
-                }).catch(e => {
-                    return res.status(500).send({ error: "unable to hash password" })
-                })
-            }).catch(error => {
-                return res.status(404).send({ error: "Username not Found" })
-            })
+            const hashedPassword = await bcrypt.hash(password, 10);
 
+            await UserModel.updateOne({ username: user.username }, { password: hashedPassword });
+
+            req.app.locals.resetSession = false;
+            return res.status(201).send({ msg: "Record Updated...!" });
         } catch (error) {
-            res.status(500).send({ error })
+            return res.status(500).send({ error: "Unable to update password" });
         }
-
     } catch (error) {
-        res.status(401).send({ error })
+        return res.status(401).send({ error });
     }
 }
